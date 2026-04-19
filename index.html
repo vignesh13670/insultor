@@ -12,28 +12,57 @@
       background: linear-gradient(135deg, #111827, #1f2937);
       color: #f9fafb;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
+      padding: 20px;
     }
-    .app {
-      width: 100%;
-      max-width: 700px;
+    .layout {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .panel, .app {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 24px;
-      padding: 28px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.35);
       backdrop-filter: blur(10px);
     }
-    h1 {
+    .panel {
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+    }
+    .app {
+      padding: 28px;
+    }
+    h1, h2 {
       margin: 0 0 8px;
-      font-size: 2rem;
     }
     .sub {
-      margin: 0 0 22px;
+      margin: 0 0 18px;
       color: #d1d5db;
       line-height: 1.5;
+    }
+    textarea, input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+    }
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+    }
+    .panel-actions, .choices {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     .card {
       background: rgba(255,255,255,0.07);
@@ -45,11 +74,6 @@
       font-size: 1.15rem;
       font-weight: 700;
       margin-bottom: 14px;
-    }
-    .choices {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
     }
     button {
       border: none;
@@ -65,8 +89,9 @@
     .no { background: #ef4444; color: white; }
     .next { background: #3b82f6; color: white; }
     .reset { background: #e5e7eb; color: #111827; }
+    .save { background: #8b5cf6; color: white; }
     .response {
-      min-height: 110px;
+      min-height: 130px;
       font-size: 1.05rem;
       line-height: 1.6;
       color: #f3f4f6;
@@ -100,36 +125,69 @@
       font-size: 0.9rem;
       margin-top: 14px;
     }
+    .plan-preview {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      color: #e5e7eb;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      min-height: 82px;
+      white-space: pre-wrap;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: static; }
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <h1>Insultor</h1>
-    <p class="sub">A tough-love study checker. It asks if you studied today. If not, it gives you a sharp but non-abusive push to get back to work.</p>
-
-    <div class="card">
-      <div class="question" id="question">Did you study today?</div>
-      <div class="choices">
-        <button class="yes" id="yesBtn">Yes</button>
-        <button class="no" id="noBtn">No</button>
-        <button class="next" id="nextBtn">Next Question</button>
-        <button class="reset" id="resetBtn">Reset</button>
+  <div class="layout">
+    <aside class="panel">
+      <h2>Daily Plans</h2>
+      <p class="sub">Write your study plan, tasks, or what you keep telling yourself you will do today.</p>
+      <textarea id="planInput" placeholder="Example:
+- Study calculus 7:00 to 8:30
+- Finish chemistry notes
+- Revise unit 3
+- No doomscrolling before 9 PM"></textarea>
+      <div class="panel-actions" style="margin-top:12px;">
+        <button class="save" id="savePlanBtn">Save Plans</button>
+        <button class="reset" id="clearPlanBtn">Clear Plans</button>
       </div>
-    </div>
+      <div class="small">The app uses your plan to give more specific accountability messages.</div>
+      <div class="plan-preview" id="planPreview">No daily plan saved yet.</div>
+    </aside>
 
-    <div class="card response" id="response">Press a button to begin.</div>
+    <main class="app">
+      <h1>Insultor</h1>
+      <p class="sub">A tough-love study checker. It uses your own plan to push you back to work. It stays sharp and personal without crossing into abuse.</p>
 
-    <div class="meter-wrap">
-      <div class="meter-label">
-        <span>Excuse level</span>
-        <span id="scoreText">0 / 5</span>
+      <div class="card">
+        <div class="question" id="question">Did you study today?</div>
+        <div class="choices">
+          <button class="yes" id="yesBtn">Yes</button>
+          <button class="no" id="noBtn">No</button>
+          <button class="next" id="nextBtn">Next Question</button>
+          <button class="reset" id="resetBtn">Reset</button>
+        </div>
       </div>
-      <div class="meter">
-        <div class="fill" id="fill"></div>
-      </div>
-    </div>
 
-    <div class="small">Questions and replies are stored only in this browser session.</div>
+      <div class="card response" id="response">Press a button to begin.</div>
+
+      <div class="meter-wrap">
+        <div class="meter-label">
+          <span>Excuse level</span>
+          <span id="scoreText">0 / 5</span>
+        </div>
+        <div class="meter">
+          <div class="fill" id="fill"></div>
+        </div>
+      </div>
+
+      <div class="small">Your questions and daily plan are saved in your browser.</div>
+    </main>
   </div>
 
   <script>
@@ -142,11 +200,11 @@
     ];
 
     const noReplies = [
-      "You keep acting shocked by mediocre results like they arrived without your help. Sit down and study.",
-      "Your goals must be exhausted from carrying all the ambition while you do absolutely none of the work.",
-      "You are treating your future like a group project and hoping effort will magically come from somewhere else.",
-      "At this point your excuses have better attendance than you do. Open your notes and fix it.",
-      "You keep postponing the work and then acting betrayed by the outcome. Study now before regret clocks in again."
+      "You made a plan and still treated it like a suggestion. Stop negotiating and start studying.",
+      "This is lazy work from someone who claims to want better results. Sit down and earn them.",
+      "Your excuses are getting more practice than your brain. Fix that right now.",
+      "You keep delaying simple work and then acting offended by the consequences. Open the notes.",
+      "If your goals mattered as much as your distractions, you would already be done. Start now."
     ];
 
     const yesReplies = [
@@ -168,47 +226,130 @@
     const noBtn = document.getElementById("noBtn");
     const nextBtn = document.getElementById("nextBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const planInput = document.getElementById("planInput");
+    const savePlanBtn = document.getElementById("savePlanBtn");
+    const clearPlanBtn = document.getElementById("clearPlanBtn");
+    const planPreview = document.getElementById("planPreview");
+
+    const planKey = "insultor-daily-plan";
+
+    function getPlanText() {
+      return planInput.value.trim();
+    }
+
+    function savePlan() {
+      const plan = getPlanText();
+      localStorage.setItem(planKey, plan);
+      updatePlanPreview();
+      responseEl.textContent = plan
+        ? "Plan saved. Now you have fewer excuses and a clearer target."
+        : "Plan cleared.";
+    }
+
+    function loadPlan() {
+      const saved = localStorage.getItem(planKey) || "";
+      planInput.value = saved;
+      updatePlanPreview();
+    }
+
+    function updatePlanPreview() {
+      const plan = getPlanText();
+      planPreview.textContent = plan || "No daily plan saved yet.";
+    }
+
+    function cleanLine(line) {
+      let text = line.trim();
+      while (text.length && (text[0] === '-' || text[0] === '*' || text[0] === ' ' || (text[0] >= '0' && text[0] <= '9') || text[0] === '.' || text[0] === ')')) {
+        text = text.slice(1).trim();
+      }
+      return text;
+    }
+
+    function extractFocusLine() {
+      const plan = getPlanText();
+      if (!plan) return "your study task";
+      const lines = plan.split("
+");
+      for (let i = 0; i < lines.length; i++) {
+        const cleaned = cleanLine(lines[i]);
+        if (cleaned) return cleaned;
+      }
+      return "your study task";
+    }
+
+    function personalizeNoReply(baseReply) {
+      const focus = extractFocusLine();
+      const variants = [
+        baseReply + " Start with: " + focus + ".",
+        baseReply + " Your next move is obvious: " + focus + ".",
+        baseReply + " Stop circling it and do this first: " + focus + "."
+      ];
+      return variants[index % variants.length];
+    }
+
+    function personalizeYesReply(baseReply) {
+      const focus = extractFocusLine();
+      if (getPlanText()) {
+        return baseReply + " Keep going and finish: " + focus + ".";
+      }
+      return baseReply;
+    }
 
     function updateView() {
       questionEl.textContent = questions[index];
-      scoreText.textContent = `${noCount} / ${questions.length}`;
-      fill.style.width = `${(noCount / questions.length) * 100}%`;
+      scoreText.textContent = noCount + " / " + questions.length;
+      fill.style.width = ((noCount / questions.length) * 100) + "%";
     }
 
     function respond(studied) {
       if (studied) {
-        responseEl.textContent = yesReplies[index];
+        responseEl.textContent = personalizeYesReply(yesReplies[index]);
       } else {
         noCount += 1;
-        responseEl.textContent = noReplies[index];
-        scoreText.textContent = `${noCount} / ${questions.length}`;
-        fill.style.width = `${(noCount / questions.length) * 100}%`;
+        responseEl.textContent = personalizeNoReply(noReplies[index]);
+        scoreText.textContent = noCount + " / " + questions.length;
+        fill.style.width = ((noCount / questions.length) * 100) + "%";
       }
     }
 
-    yesBtn.addEventListener("click", () => respond(true));
-    noBtn.addEventListener("click", () => respond(false));
+    yesBtn.addEventListener("click", function () { respond(true); });
+    noBtn.addEventListener("click", function () { respond(false); });
 
-    nextBtn.addEventListener("click", () => {
+    nextBtn.addEventListener("click", function () {
       if (index < questions.length - 1) {
         index += 1;
         updateView();
-        responseEl.textContent = "Answer the next one honestly.";
+        if (getPlanText()) {
+          responseEl.textContent = "Next question. No drifting. You already wrote the plan.";
+        } else {
+          responseEl.textContent = "Answer the next one honestly.";
+        }
       } else {
-        responseEl.textContent = noCount === 0
-          ? "Perfect score. You actually did the work."
-          : `Done. You dodged ${noCount} question(s). Time to stop negotiating and study.`;
+        if (noCount === 0) {
+          responseEl.textContent = "Perfect score. You actually did the work.";
+        } else {
+          responseEl.textContent = "Done. You dodged " + noCount + " question(s). Enough talking. Go do " + extractFocusLine() + ".";
+        }
       }
     });
 
-    resetBtn.addEventListener("click", () => {
+    resetBtn.addEventListener("click", function () {
       index = 0;
       noCount = 0;
       updateView();
       responseEl.textContent = "Press a button to begin.";
     });
 
+    savePlanBtn.addEventListener("click", savePlan);
+    clearPlanBtn.addEventListener("click", function () {
+      planInput.value = "";
+      savePlan();
+    });
+
+    planInput.addEventListener("input", updatePlanPreview);
+
     updateView();
+    loadPlan();
   </script>
 </body>
 </html>
